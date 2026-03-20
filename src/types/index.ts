@@ -1,17 +1,24 @@
 // src/types/index.ts
+
 // User types
 export interface User {
   id: number;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  createdAt: string;
+  name?: string; // Backend uses 'name' instead of firstName/lastName
+  createdAt?: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  tokenExpiry: number | null; // Timestamp in milliseconds
 }
 
 export interface AuthResponse {
-  success: boolean;
+  message: string;
   token: string;
   user: User;
+  refreshToken?: string; // Add refresh token if backend provides it
 }
 
 export interface LoginCredentials {
@@ -22,8 +29,21 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  firstName: string; // We'll keep this for frontend form
+  lastName: string; // We'll combine to 'name' for backend
+}
+
+export interface StoredAuthData {
+  token: string;
+  user: User;
+  tokenExpiry: number;
+  refreshToken?: string; // Optional refresh token
+}
+
+// Add refresh token response type
+export interface RefreshTokenResponse {
+  token: string;
+  tokenExpiry: number;
 }
 
 // Seizure types
@@ -80,4 +100,51 @@ export interface Medication {
   times: string[];
   startDate: string;
   notes?: string;
+}
+
+// ========== NEW TYPES FOR DASHBOARD ==========
+
+// Seizure Summary for Dashboard
+export interface SeizureSummary {
+  totalSeizures: number;
+  seizuresThisWeek: number;
+  seizuresThisMonth: number;
+  averageDuration: number;
+  mostCommonTrigger: string;
+  trend: "increasing" | "decreasing" | "stable";
+  trendPercentage?: number;
+}
+
+// API Response for Seizure Summary
+export interface SeizureSummaryResponse {
+  success: boolean;
+  data: SeizureSummary;
+}
+
+// API Response for Recent Seizures
+export interface RecentSeizuresResponse {
+  success: boolean;
+  data: Seizure[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+// Quick Action Types
+export interface QuickAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  path: string;
+  color: string;
+}
+
+// Dashboard Data Aggregated
+export interface DashboardData {
+  summary: SeizureSummary;
+  riskPrediction: RiskPredictionResponse;
+  recentSeizures: Seizure[];
 }
