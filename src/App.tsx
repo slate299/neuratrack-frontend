@@ -8,6 +8,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard"; // Import Dashboard
+import SeizureLogger from "@/pages/SeizureLogger";
 
 // Component to handle initial app loading
 const AppContent: React.FC = () => {
@@ -48,7 +49,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <div>Seizure Logger - Coming Soon</div>
+              <SeizureLogger /> {/* Replace the div with this */}
             </DashboardLayout>
           </ProtectedRoute>
         }

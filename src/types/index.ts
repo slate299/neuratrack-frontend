@@ -148,3 +148,67 @@ export interface DashboardData {
   riskPrediction: RiskPredictionResponse;
   recentSeizures: Seizure[];
 }
+
+// ========== NEW TYPES FOR AI SEIZURE LOGGER ==========
+
+// Request for AI parsing
+export interface AIParseRequest {
+  note: string;
+}
+
+// Response from AI parsing
+export interface AIParseResponse {
+  success: boolean;
+  parsed: ParsedSeizureData;
+  message?: string;
+}
+
+// Request to save a seizure
+export interface CreateSeizureRequest {
+  occurredAt: string;
+  durationSeconds?: number;
+  seizureType?: string;
+  triggers?: string[];
+  symptoms?: string[];
+  postIctalSymptoms?: string[];
+  notes?: string;
+  aiConfidence?: number;
+}
+
+// Response after saving seizure
+export interface CreateSeizureResponse {
+  success: boolean;
+  data: Seizure;
+  message?: string;
+}
+
+// Example prompts for users
+export interface ExamplePrompt {
+  id: string;
+  title: string;
+  text: string;
+}
+
+// Predefined example prompts
+export const examplePrompts: ExamplePrompt[] = [
+  {
+    id: "1",
+    title: "Generalized Seizure",
+    text: "Had a seizure at 3pm today. It lasted about 2 minutes. I was very tired afterward and had a headache. I think lack of sleep triggered it.",
+  },
+  {
+    id: "2",
+    title: "Focal Seizure",
+    text: "Around lunchtime, I had a focal seizure. My left arm started twitching for about 30 seconds. I was stressed from work, that might be the trigger.",
+  },
+  {
+    id: "3",
+    title: "Absence Seizure",
+    text: "This morning I had a brief absence seizure. I zoned out for maybe 10 seconds. My wife noticed I was staring. I'm feeling okay now.",
+  },
+  {
+    id: "4",
+    title: "Nocturnal Seizure",
+    text: "Woke up at 2am with a seizure. My partner said it lasted around 90 seconds. I bit my tongue and feel very tired today.",
+  },
+];

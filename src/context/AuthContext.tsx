@@ -94,15 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (storedAuth) {
           setUser(storedAuth.user);
-
-          // Optional: Verify token with backend
-          try {
-            await axiosInstance.get("/api/auth/me");
-          } catch (error) {
-            // Token is invalid despite not being expired
-            console.error("Token validation failed:", error);
-            logout();
-          }
+          // Token validation removed - /api/auth/me endpoint doesn't exist
         }
       } catch (error) {
         console.error("Auth check failed:", error);
