@@ -291,3 +291,123 @@ export interface InsightsFilters {
   seizureType?: string;
   showRiskOnly?: boolean;
 }
+
+// src/types/index.ts
+
+// ========== NEW TYPES FOR MEDICATION TRACKER ==========
+
+// Complete Medication interface (enhance existing)
+export interface Medication {
+  id: number;
+  name: string;
+  dosage: string;
+  frequency: string; // e.g., "daily", "twice-daily", "weekly"
+  times: string[]; // e.g., ["08:00", "20:00"]
+  startDate: string;
+  endDate?: string;
+  notes?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Medication adherence record
+export interface MedicationAdherence {
+  id: number;
+  medicationId: number;
+  medicationName: string;
+  scheduledFor: string; // ISO date time
+  takenAt: string | null; // ISO date time when taken
+  status: "pending" | "taken" | "missed" | "late";
+  notes?: string;
+}
+
+// AI Medication Insights
+export interface MedicationInsights {
+  success: boolean;
+  insights: {
+    effectiveness: {
+      score: number;
+      message: string;
+      trend: "improving" | "stable" | "declining";
+    };
+    adherenceRate: {
+      percentage: number;
+      streak: number;
+      bestStreak: number;
+      message: string;
+    };
+    recommendations: string[];
+    commonMissedTimes: string[];
+  };
+}
+
+// Smart Reminder
+export interface SmartReminder {
+  success: boolean;
+  reminder: {
+    id: number;
+    medicationId: number;
+    medicationName: string;
+    dosage: string;
+    scheduledTime: string;
+    timeUntil: number; // minutes until reminder
+    priority: "high" | "medium" | "low";
+    reason: string;
+  } | null;
+  nextReminders: Array<{
+    medicationId: number;
+    medicationName: string;
+    scheduledTime: string;
+    timeUntil: number;
+  }>;
+}
+
+// Create Medication Request
+export interface CreateMedicationRequest {
+  name: string;
+  dosage: string;
+  frequency: string;
+  times: string[];
+  startDate: string;
+  endDate?: string;
+  notes?: string;
+}
+
+// Update Medication Request
+export interface UpdateMedicationRequest extends Partial<CreateMedicationRequest> {
+  active?: boolean;
+}
+
+// API Response for Medications list
+export interface MedicationsResponse {
+  success: boolean;
+  data: Medication[];
+}
+
+// API Response for Single Medication
+export interface MedicationResponse {
+  success: boolean;
+  data: Medication;
+}
+
+// API Response for Adherence
+export interface AdherenceResponse {
+  success: boolean;
+  data: MedicationAdherence[];
+  summary: {
+    total: number;
+    taken: number;
+    missed: number;
+    pending: number;
+    adherenceRate: number;
+    currentStreak: number;
+  };
+}
+
+// Mark Medication Taken Request
+export interface MarkTakenRequest {
+  medicationId: number;
+  scheduledFor: string;
+  takenAt?: string;
+}

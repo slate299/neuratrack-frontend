@@ -7,9 +7,10 @@ import { AuthLoadingScreen } from "@/components/auth/AuthLoadingScreen";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
-import Dashboard from "@/pages/Dashboard"; // Import Dashboard
+import Dashboard from "@/pages/Dashboard";
 import SeizureLogger from "@/pages/SeizureLogger";
 import Insights from "@/pages/Insights";
+import Medications from "@/pages/Medications"; // Add this import
 
 // Component to handle initial app loading
 const AppContent: React.FC = () => {
@@ -50,7 +51,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <SeizureLogger /> {/* Replace the div with this */}
+              <SeizureLogger />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -60,7 +61,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <Insights /> {/* Replace the div with this */}
+              <Insights />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -70,7 +71,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <div>Medications - Coming Soon</div>
+              <Medications /> {/* Replace the div with this */}
             </DashboardLayout>
           </ProtectedRoute>
         }
