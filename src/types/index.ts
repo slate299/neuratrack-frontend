@@ -212,3 +212,82 @@ export const examplePrompts: ExamplePrompt[] = [
     text: "Woke up at 2am with a seizure. My partner said it lasted around 90 seconds. I bit my tongue and feel very tired today.",
   },
 ];
+
+// ========== NEW TYPES FOR INSIGHTS & ANALYTICS ==========
+
+// Hourly heatmap data
+export interface HourlyData {
+  hour: number; // 0-23
+  count: number;
+  riskScore?: number;
+}
+
+// Day of week data
+export interface DayOfWeekData {
+  day: string; // Monday, Tuesday, etc.
+  dayIndex: number; // 0-6
+  count: number;
+  averageRisk: number;
+}
+
+// Trigger frequency data
+export interface TriggerFrequency {
+  trigger: string;
+  count: number;
+  percentage: number;
+}
+
+// Timeline event for seizure history
+export interface TimelineEvent {
+  id: number;
+  date: string;
+  time: string;
+  seizureType: string;
+  durationSeconds?: number;
+  triggers: string[];
+  riskLevel: "Low" | "Medium" | "High";
+  notes?: string;
+}
+
+// Date range for filtering
+export interface DateRange {
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+// Training data response (for charts)
+export interface TrainingDataResponse {
+  success: boolean;
+  stats: {
+    totalSeizures: number;
+    dateRange: {
+      from: string;
+      to: string;
+    };
+    commonTriggers: Array<{ item: string; count: number }>;
+    commonSymptoms: Array<{ item: string; count: number }>;
+    hourDistribution: Array<{ hour: number; count: number }>;
+    dayDistribution: Array<{ day: string; count: number }>;
+  };
+  data: Array<{
+    id: number;
+    date: string;
+    features: {
+      hour: number;
+      dayOfWeek: number;
+      weekOfMonth: number;
+      month: number;
+      duration: number | null;
+      triggers: string[] | null;
+      symptoms: string[] | null;
+      aiConfidence: number | null;
+    };
+  }>;
+}
+
+// Insights page filter state
+export interface InsightsFilters {
+  dateRange: DateRange;
+  seizureType?: string;
+  showRiskOnly?: boolean;
+}

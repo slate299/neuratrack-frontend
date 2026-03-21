@@ -9,6 +9,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard"; // Import Dashboard
 import SeizureLogger from "@/pages/SeizureLogger";
+import Insights from "@/pages/Insights";
 
 // Component to handle initial app loading
 const AppContent: React.FC = () => {
@@ -59,7 +60,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <div>Insights - Coming Soon</div>
+              <Insights /> {/* Replace the div with this */}
             </DashboardLayout>
           </ProtectedRoute>
         }
