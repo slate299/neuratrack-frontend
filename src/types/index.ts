@@ -411,3 +411,66 @@ export interface MarkTakenRequest {
   scheduledFor: string;
   takenAt?: string;
 }
+
+// ========== TYPES FOR AI CHAT ASSISTANT ==========
+
+// Message role types
+export type MessageRole = "user" | "assistant";
+
+// Individual message in a conversation
+export interface Message {
+  id: number;
+  role: MessageRole;
+  content: string;
+  createdAt: string;
+  metadata?: {
+    confidence?: number;
+    sources?: string[];
+    suggestedActions?: Array<{
+      type: string;
+      label: string;
+      data?: any;
+    }>;
+  };
+}
+
+// Conversation summary (for sidebar)
+export interface Conversation {
+  id: number;
+  title: string;
+  lastMessagePreview: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
+// Full conversation with messages
+export interface ConversationDetail extends Conversation {
+  messages: Message[];
+}
+
+// Request to send a message
+export interface ChatRequest {
+  message: string;
+  conversationId?: number; // undefined = new conversation
+}
+
+// Response from chat endpoint
+export interface ChatResponse {
+  success: boolean;
+  data: {
+    message: Message;
+    conversationId: number;
+  };
+}
+
+// Response for fetching conversations
+export interface ConversationsResponse {
+  success: boolean;
+  data: Conversation[];
+}
+
+// Response for fetching a single conversation
+export interface ConversationResponse {
+  success: boolean;
+  data: ConversationDetail;
+}

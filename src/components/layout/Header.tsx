@@ -37,6 +37,45 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 NeuraTrack
               </span>
             </Link>
+            {/* Navigation Links */}
+            <nav className="hidden md:flex ml-8 space-x-4">
+              <Link
+                to="/dashboard"
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/seizure-logger"
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Log Seizure
+              </Link>
+              <Link
+                to="/insights"
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Insights
+              </Link>
+              <Link
+                to="/medications"
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Medications
+              </Link>
+              <Link
+                to="/chat"
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                AI Chat
+              </Link>
+              <Link
+                to="/emergency"
+                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                🚨 Emergency
+              </Link>
+            </nav>
           </div>
 
           {/* Right side - User menu */}

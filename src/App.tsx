@@ -10,7 +10,9 @@ import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import SeizureLogger from "@/pages/SeizureLogger";
 import Insights from "@/pages/Insights";
-import Medications from "@/pages/Medications"; // Add this import
+import Medications from "@/pages/Medications";
+import Chat from "@/pages/Chat";
+import Emergency from "@/pages/Emergency";
 
 // Component to handle initial app loading
 const AppContent: React.FC = () => {
@@ -81,7 +83,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <div>AI Chat - Coming Soon</div>
+              <Chat />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -92,6 +94,16 @@ const AppContent: React.FC = () => {
           <ProtectedRoute>
             <DashboardLayout>
               <div>Profile - Coming Soon</div>
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/emergency"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Emergency />
             </DashboardLayout>
           </ProtectedRoute>
         }
