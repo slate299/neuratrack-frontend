@@ -1,6 +1,6 @@
 // src/pages/Medications.tsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { medicationService } from "@/services/medication.service";
 import { Plus, Pill, Calendar, Clock, Bell } from "lucide-react";
@@ -10,12 +10,21 @@ import MedicationInsights from "@/components/medications/MedicationInsights";
 import SmartReminder from "@/components/medications/SmartReminder";
 import AdherenceTracker from "@/components/medications/AdherenceTracker";
 import { CardSkeleton } from "@/components/ui/Skeleton";
+import { useNotifications } from "@/hooks/useNotifications";
 import toast from "react-hot-toast";
 
 export default function Medications() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMedication, setEditingMedication] = useState<any>(null);
+  const [nextLocalReminder, setNextLocalReminder] = useState<{
+    name: string;
+    time: string;
+    minutes: number;
+    dosage: string;
+  } | null>(null);
+
   const queryClient = useQueryClient();
+  const { rescheduleReminders } = useNotifications();
 
   // Fetch medications
   const {
@@ -46,13 +55,102 @@ export default function Medications() {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  // Calculate next reminder from local medications
+  useEffect(() => {
+    if (!medications) return;
+
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTimeMinutes = currentHours * 60 + currentMinutes;
+
+    let closestReminder: {
+      name: string;
+      time: string;
+      minutes: number;
+      dosage: string;
+    } | null = null;
+    let closestDiff = Infinity;
+
+    medications.forEach((med) => {
+      if (med.active === false) return;
+
+      med.times.forEach((timeStr) => {
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        const reminderMinutes = hours * 60 + minutes;
+        let diff = reminderMinutes - currentTimeMinutes;
+
+        // If time passed today, schedule for tomorrow
+        if (diff < 0) {
+          diff += 24 * 60;
+        }
+
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closestReminder = {
+            name: med.name,
+            dosage: med.dosage,
+            time: timeStr,
+            minutes: diff,
+          };
+        }
+      });
+    });
+
+    setNextLocalReminder(closestReminder);
+
+    // Update every minute to keep time display fresh
+    const interval = setInterval(() => {
+      if (!medications) return;
+
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMinutes = now.getMinutes();
+      const currentTimeMinutes = currentHours * 60 + currentMinutes;
+
+      let closest: typeof closestReminder = null;
+      let closestDiff = Infinity;
+
+      medications.forEach((med) => {
+        if (med.active === false) return;
+
+        med.times.forEach((timeStr) => {
+          const [hours, minutes] = timeStr.split(":").map(Number);
+          const reminderMinutes = hours * 60 + minutes;
+          let diff = reminderMinutes - currentTimeMinutes;
+
+          if (diff < 0) {
+            diff += 24 * 60;
+          }
+
+          if (diff < closestDiff) {
+            closestDiff = diff;
+            closest = {
+              name: med.name,
+              dosage: med.dosage,
+              time: timeStr,
+              minutes: diff,
+            };
+          }
+        });
+      });
+
+      setNextLocalReminder(closest);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [medications]);
+
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: (id: number) => medicationService.deleteMedication(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["medications"] });
-      queryClient.invalidateQueries({ queryKey: ["adherence"] });
-      queryClient.invalidateQueries({ queryKey: ["medication-insights"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["medications"] });
+      await queryClient.invalidateQueries({ queryKey: ["adherence"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["medication-insights"],
+      });
+      await rescheduleReminders();
       toast.success("Medication deleted successfully");
     },
     onError: () => {
@@ -76,12 +174,23 @@ export default function Medications() {
     setEditingMedication(null);
   };
 
-  const handleModalSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["medications"] });
-    queryClient.invalidateQueries({ queryKey: ["adherence"] });
-    queryClient.invalidateQueries({ queryKey: ["medication-insights"] });
+  const handleModalSuccess = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["medications"] });
+    await queryClient.invalidateQueries({ queryKey: ["adherence"] });
+    await queryClient.invalidateQueries({ queryKey: ["medication-insights"] });
+    await rescheduleReminders();
     setIsModalOpen(false);
     setEditingMedication(null);
+  };
+
+  // Helper function to format time remaining
+  const formatTimeRemaining = (minutes: number) => {
+    if (minutes === 0) return "Due now!";
+    if (minutes < 60) return `in ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) return `in ${hours}h`;
+    return `in ${hours}h ${mins}m`;
   };
 
   if (medicationsLoading) {
@@ -193,20 +302,35 @@ export default function Medications() {
           </div>
         </div>
 
+        {/* Next Reminder Card - Using Local Data */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
               <Bell className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Next Reminder
               </p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {reminder?.reminder
-                  ? `${reminder.reminder.medicationName} at ${reminder.reminder.scheduledTime}`
-                  : "No upcoming reminders"}
-              </p>
+              {nextLocalReminder ? (
+                <>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {nextLocalReminder.name} {nextLocalReminder.dosage}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      at {nextLocalReminder.time}
+                    </span>
+                    <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                      {formatTimeRemaining(nextLocalReminder.minutes)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  No upcoming reminders
+                </p>
+              )}
             </div>
           </div>
         </div>

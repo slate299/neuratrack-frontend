@@ -15,20 +15,21 @@ export const insightsService = {
       return response.data;
     } catch (error) {
       console.error("Failed to fetch training data:", error);
-      // Return empty/default data structure
+      // Return empty/default data structure matching TrainingDataResponse
       return {
         success: false,
-        hasData: false,
-        hourlyData: [],
-        dayOfWeekData: [],
-        triggerFrequency: [],
-        seizures: [],
-        summary: {
+        stats: {
           totalSeizures: 0,
-          averageDuration: 0,
-          mostCommonTrigger: "No data yet",
-          mostCommonTimeOfDay: "No data yet",
+          dateRange: {
+            from: new Date().toISOString(),
+            to: new Date().toISOString(),
+          },
+          commonTriggers: [],
+          commonSymptoms: [],
+          hourDistribution: [],
+          dayDistribution: [],
         },
+        data: [],
       };
     }
   },

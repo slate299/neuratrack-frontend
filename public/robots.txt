@@ -1,0 +1,5 @@
+# neuratrack-frontend/public/robots.txt
+
+User-agent: *
+Allow: /
+Sitemap: https://neuratrack.com/sitemap.xml

@@ -1,8 +1,10 @@
 // src/components/layout/Header.tsx
+
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, User, Settings, Menu, X } from "lucide-react";
+import { LogOut, User, Settings, Menu, X, FileText } from "lucide-react"; // ADD FileText import
 import { Link } from "react-router-dom";
+import { NotificationPermission } from "@/components/ui/NotificationPermission";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -64,6 +66,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 Medications
               </Link>
               <Link
+                to="/reports"
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Reports
+              </Link>
+              <Link
                 to="/chat"
                 className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
               >
@@ -80,6 +88,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
           {/* Right side - User menu */}
           <div className="flex items-center space-x-4">
+            <NotificationPermission />
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}

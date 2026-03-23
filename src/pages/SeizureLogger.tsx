@@ -8,6 +8,8 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { aiService } from "@/services/ai.service";
 import { ParsedSeizureData, examplePrompts } from "@/types";
+import { offlineSeizureService } from "@/services/offline-seizure.service";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 import toast from "react-hot-toast";
 import {
   Brain,
@@ -100,9 +102,11 @@ export default function SeizureLogger() {
     },
   });
 
+  const { online } = useOfflineSync();
+
   // Save Seizure Mutation
   const saveMutation = useMutation({
-    mutationFn: (data: SeizureFormData) => {
+    mutationFn: async (data: SeizureFormData) => {
       const requestData = {
         occurredAt: data.occurredAt,
         durationSeconds: data.durationSeconds || undefined,
@@ -113,10 +117,24 @@ export default function SeizureLogger() {
         notes: data.notes || undefined,
         aiConfidence: data.aiConfidence,
       };
-      return aiService.saveSeizure(requestData);
+
+      if (!online) {
+        // Offline - save locally
+        const offlineResult =
+          await offlineSeizureService.saveSeizureOffline(requestData);
+        return { offline: true, data: offlineResult };
+      }
+
+      // Online - save to server
+      const response = await aiService.saveSeizure(requestData);
+      return { offline: false, data: response };
     },
-    onSuccess: () => {
-      toast.success("Seizure logged successfully!");
+    onSuccess: (result) => {
+      if (result.offline) {
+        toast.success("Seizure saved locally! Will sync when back online.");
+      } else {
+        toast.success("Seizure logged successfully!");
+      }
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["seizures"] });
       reset();
@@ -133,12 +151,95 @@ export default function SeizureLogger() {
     },
   });
 
+  // Add this new function for offline parsing
+  const handleOfflineParse = () => {
+    // Create a basic parsed data structure from the natural note
+    const offlineParsedData: ParsedSeizureData = {
+      timestamp: new Date().toISOString(),
+      durationSeconds: undefined,
+      seizureType: undefined,
+      triggers: [],
+      symptoms: [],
+      postIctalSymptoms: [],
+      confidence: 0, // Low confidence since it's offline
+    };
+
+    // Try to extract basic info from note (simple keyword matching)
+    const note = naturalNote.toLowerCase();
+
+    // Check for duration (e.g., "2 minutes", "30 seconds")
+    const minuteMatch = note.match(/(\d+)\s*minute/);
+    if (minuteMatch) {
+      offlineParsedData.durationSeconds = parseInt(minuteMatch[1]) * 60;
+    }
+    const secondMatch = note.match(/(\d+)\s*second/);
+    if (secondMatch) {
+      offlineParsedData.durationSeconds = parseInt(secondMatch[1]);
+    }
+
+    // Check for seizure type
+    if (note.includes("focal")) offlineParsedData.seizureType = "focal";
+    else if (note.includes("generalized"))
+      offlineParsedData.seizureType = "generalized";
+    else if (note.includes("absence"))
+      offlineParsedData.seizureType = "absence";
+    else if (note.includes("tonic clonic") || note.includes("tonic-clonic"))
+      offlineParsedData.seizureType = "tonic-clonic";
+    else if (note.includes("myoclonic"))
+      offlineParsedData.seizureType = "myoclonic";
+    else if (note.includes("atonic")) offlineParsedData.seizureType = "atonic";
+
+    // Check for common triggers
+    const commonTriggers = [
+      "stress",
+      "lack of sleep",
+      "sleep",
+      "lights",
+      "flashing",
+      "alcohol",
+      "fever",
+      "illness",
+      "missed medication",
+      "medication",
+    ];
+    offlineParsedData.triggers = commonTriggers.filter((trigger) =>
+      note.includes(trigger),
+    );
+
+    setParsedData(offlineParsedData);
+    setIsEditing(true);
+
+    // Populate form with parsed data
+    setValue("occurredAt", offlineParsedData.timestamp.slice(0, 16));
+    if (offlineParsedData.durationSeconds) {
+      setValue("durationSeconds", offlineParsedData.durationSeconds);
+    }
+    if (offlineParsedData.seizureType) {
+      setValue("seizureType", offlineParsedData.seizureType);
+    }
+    if (offlineParsedData.triggers.length) {
+      setValue("triggers", offlineParsedData.triggers);
+    }
+    setValue("aiConfidence", 0);
+
+    toast.success(
+      "Offline mode: Using basic parsing. Please review and edit details.",
+    );
+  };
+
   const handleParse = () => {
     if (!naturalNote.trim()) {
       toast.error("Please enter a seizure description");
       return;
     }
-    parseMutation.mutate(naturalNote);
+
+    if (!online) {
+      // Offline - use basic parsing
+      handleOfflineParse();
+    } else {
+      // Online - use AI parsing
+      parseMutation.mutate(naturalNote);
+    }
   };
 
   const handleReset = () => {

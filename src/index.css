@@ -1,4 +1,7 @@
-@import "tailwindcss";
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Your custom styles below */
 @layer base {

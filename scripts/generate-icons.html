@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generate NeuraTrack Icons</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Inter",
+          sans-serif;
+        background: #f3f4f6;
+        margin: 0;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        width: 100%;
+      }
+      h1 {
+        color: #0ea5e9;
+        margin-top: 0;
+      }
+      .icon-preview {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+      }
+      .icon-item {
+        text-align: center;
+      }
+      canvas {
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 0.5rem;
+      }
+      button {
+        background: #0ea5e9;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        margin-top: 0.5rem;
+      }
+      button:hover {
+        background: #0284c7;
+      }
+      .download-all {
+        background: #10b981;
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+      }
+      .instructions {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        border-radius: 0.5rem;
+      }
+      code {
+        background: #1f2937;
+        color: #10b981;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎨 NeuraTrack Icon Generator</h1>
+      <p>
+        Generate PWA icons matching your app's
+        <strong style="color: #0ea5e9">blue theme (#0ea5e9)</strong>
+      </p>
+
+      <div class="icon-preview" id="preview"></div>
+
+      <div class="instructions">
+        <strong>📝 Instructions:</strong><br />
+        1. Click "Download" for each icon below<br />
+        2. Save them to your <code>public/</code> folder<br />
+        3. Or click "Download All Icons" to save them all at once<br />
+        4. Run <code>npm run build</code> to generate the PWA files
+      </div>
+    </div>
+
+    <script>
+      const PRIMARY_COLOR = "#0ea5e9";
+      const DARKER_COLOR = "#0284c7";
+
+      const icons = [
+        { name: "apple-touch-icon.png", size: 180, id: "apple-icon" },
+        { name: "icon-192.png", size: 192, id: "icon-192" },
+        { name: "icon-512.png", size: 512, id: "icon-512" },
+      ];
+
+      function generateIcon(size, canvasId) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        canvas.id = canvasId;
+        const ctx = canvas.getContext("2d");
+
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, PRIMARY_COLOR);
+        gradient.addColorStop(1, DARKER_COLOR);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+
+        // Rounded rectangle border
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = Math.max(2, size * 0.02);
+        ctx.strokeRect(size * 0.08, size * 0.08, size * 0.84, size * 0.84);
+
+        // Draw "N" text
+        ctx.fillStyle = "#FFFFFF";
+        const fontSize = size * 0.5;
+        ctx.font = `bold ${fontSize}px "Inter", "Arial", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("N", size / 2, size / 2);
+
+        return canvas;
+      }
+
+      function downloadIcon(canvas, filename) {
+        const link = document.createElement("a");
+        link.download = filename;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      function downloadAll() {
+        icons.forEach((icon) => {
+          const canvas = document.getElementById(icon.id);
+          if (canvas) {
+            downloadIcon(canvas, icon.name);
+            setTimeout(() => {}, 100); // Small delay between downloads
+          }
+        });
+      }
+
+      // Generate and display icons
+      const previewDiv = document.getElementById("preview");
+
+      icons.forEach((icon) => {
+        const canvas = generateIcon(icon.size, icon.id);
+        const container = document.createElement("div");
+        container.className = "icon-item";
+
+        const sizeLabel = document.createElement("div");
+        sizeLabel.textContent = `${icon.size}x${icon.size}`;
+        sizeLabel.style.fontSize = "0.875rem";
+        sizeLabel.style.color = "#6b7280";
+        sizeLabel.style.marginTop = "0.5rem";
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.textContent = "Download";
+        downloadBtn.onclick = () => downloadIcon(canvas, icon.name);
+
+        container.appendChild(canvas);
+        container.appendChild(sizeLabel);
+        container.appendChild(downloadBtn);
+        previewDiv.appendChild(container);
+      });
+
+      // Add "Download All" button
+      const downloadAllBtn = document.createElement("button");
+      downloadAllBtn.textContent = "📥 Download All Icons";
+      downloadAllBtn.className = "download-all";
+      downloadAllBtn.onclick = downloadAll;
+      previewDiv.parentNode.insertBefore(
+        downloadAllBtn,
+        previewDiv.nextSibling,
+      );
+    </script>
+  </body>
+</html>

@@ -17,10 +17,11 @@ export default function SmartReminder({
     return <CardSkeleton />;
   }
 
-  if (
-    !reminder?.reminder &&
-    (!reminder?.nextReminders || reminder.nextReminders.length === 0)
-  ) {
+  // Check if there are reminders (using the API response structure)
+  const hasReminders = reminder?.reminders && reminder.reminders.length > 0;
+  const remindersList = reminder?.reminders || [];
+
+  if (!hasReminders) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -42,26 +43,18 @@ export default function SmartReminder({
     );
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
-      default:
-        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800";
-    }
+  const getPriorityColor = (adherence: number) => {
+    if (adherence >= 90)
+      return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800";
+    if (adherence >= 70)
+      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
+    return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800";
   };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <AlertTriangle className="h-4 w-4" />;
-      case "medium":
-        return <Clock className="h-4 w-4" />;
-      default:
-        return <CheckCircle className="h-4 w-4" />;
-    }
+  const getPriorityIcon = (adherence: number) => {
+    if (adherence >= 90) return <CheckCircle className="h-4 w-4" />;
+    if (adherence >= 70) return <Clock className="h-4 w-4" />;
+    return <AlertTriangle className="h-4 w-4" />;
   };
 
   return (
@@ -73,60 +66,48 @@ export default function SmartReminder({
         </h2>
       </div>
 
-      {/* Current Reminder */}
-      {reminder?.reminder && (
-        <div
-          className={`rounded-lg p-4 mb-4 border ${getPriorityColor(reminder.reminder.priority)}`}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                {getPriorityIcon(reminder.reminder.priority)}
-                <span className="font-medium">
-                  {reminder.reminder.medicationName}
-                </span>
-              </div>
-              <p className="text-sm">{reminder.reminder.dosage}</p>
-              <div className="flex items-center gap-2 mt-2 text-sm">
-                <Clock className="h-4 w-4" />
-                <span>Due at {reminder.reminder.scheduledTime}</span>
-                {reminder.reminder.timeUntil <= 30 && (
-                  <span className="text-xs font-medium">
-                    (in {reminder.reminder.timeUntil} min)
-                  </span>
-                )}
-              </div>
-              <p className="text-xs mt-2">{reminder.reminder.reason}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Next Reminders */}
-      {reminder?.nextReminders && reminder.nextReminders.length > 0 && (
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Upcoming Doses
-          </h3>
-          <div className="space-y-2">
-            {reminder.nextReminders.slice(0, 3).map((r, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <Clock className="h-3 w-3 text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {r.medicationName}
+      {/* Display all reminders from API */}
+      <div className="space-y-3">
+        {remindersList.map((reminderItem: any, idx: number) => (
+          <div
+            key={idx}
+            className={`rounded-lg p-4 border ${getPriorityColor(reminderItem.currentAdherence || 100)}`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  {getPriorityIcon(reminderItem.currentAdherence || 100)}
+                  <span className="font-medium">
+                    {reminderItem.medicationName}
                   </span>
                 </div>
-                <span className="text-gray-500 dark:text-gray-400">
-                  {r.scheduledTime} ({r.timeUntil} min)
-                </span>
+                <p className="text-sm">{reminderItem.dosage}</p>
+                <div className="flex items-center gap-2 mt-2 text-sm">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    Suggested time:{" "}
+                    {reminderItem.displayTime || reminderItem.suggestedTime}
+                  </span>
+                </div>
+                <p className="text-xs mt-2 text-gray-600 dark:text-gray-300">
+                  {reminderItem.reason}
+                </p>
+                {reminderItem.currentAdherence !== undefined && (
+                  <p className="text-xs mt-1 text-green-600 dark:text-green-400">
+                    Adherence: {reminderItem.currentAdherence}%
+                  </p>
+                )}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        ))}
+      </div>
+
+      {/* Display note if present */}
+      {reminder?.note && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+          💡 {reminder.note}
+        </p>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-// src/main.tsx
+// neuratrack-frontend/src/main.tsx
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import App from "./App";
 import { queryClient } from "./lib/react-query";
 import { env, devLog } from "./config/env";
+import { PWAInstallPrompt } from "./components/ui/PWAInstallPrompt";
 import "./index.css";
 
 // Development logging
@@ -22,10 +23,20 @@ if (env.enableLogging && env.isDevelopment) {
   });
 }
 
+// Register service worker for PWA
+if ("serviceWorker" in navigator && env.isProduction) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((registrationError) => {
+      console.error("SW registration failed:", registrationError);
+    });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
+      <PWAInstallPrompt />
       <Toaster
         position="top-right"
         toastOptions={{

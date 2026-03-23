@@ -292,8 +292,6 @@ export interface InsightsFilters {
   showRiskOnly?: boolean;
 }
 
-// src/types/index.ts
-
 // ========== NEW TYPES FOR MEDICATION TRACKER ==========
 
 // Complete Medication interface (enhance existing)
@@ -322,45 +320,20 @@ export interface MedicationAdherence {
   notes?: string;
 }
 
-// AI Medication Insights
+// AI Medication Insights (Updated)
 export interface MedicationInsights {
   success: boolean;
-  insights: {
-    effectiveness: {
-      score: number;
-      message: string;
-      trend: "improving" | "stable" | "declining";
-    };
-    adherenceRate: {
-      percentage: number;
-      streak: number;
-      bestStreak: number;
-      message: string;
-    };
-    recommendations: string[];
-    commonMissedTimes: string[];
-  };
+  hasMedications: boolean;
+  overallAdherence: number;
+  insights: MedicationInsightItem[];
+  recommendations: Array<{ type: string; message: string }> | string[];
 }
 
-// Smart Reminder
+// Smart Reminder (Updated)
 export interface SmartReminder {
   success: boolean;
-  reminder: {
-    id: number;
-    medicationId: number;
-    medicationName: string;
-    dosage: string;
-    scheduledTime: string;
-    timeUntil: number; // minutes until reminder
-    priority: "high" | "medium" | "low";
-    reason: string;
-  } | null;
-  nextReminders: Array<{
-    medicationId: number;
-    medicationName: string;
-    scheduledTime: string;
-    timeUntil: number;
-  }>;
+  reminders: SmartReminderItem[];
+  note?: string;
 }
 
 // Create Medication Request
@@ -473,4 +446,50 @@ export interface ConversationsResponse {
 export interface ConversationResponse {
   success: boolean;
   data: ConversationDetail;
+}
+
+// ========== UPDATED TYPES FOR MEDICATION AI INSIGHTS (Matching Backend API) ==========
+
+// Smart Reminder Item
+export interface SmartReminderItem {
+  medicationId: number;
+  medicationName: string;
+  dosage: string;
+  suggestedTime: string;
+  displayTime: string;
+  reason: string;
+  currentAdherence: number;
+}
+
+// Smart Reminder Response (Updated to match backend)
+export interface SmartReminderResponse {
+  success: boolean;
+  reminders: SmartReminderItem[];
+  note?: string;
+}
+
+// Medication Insight Item
+export interface MedicationInsightItem {
+  medicationId: number;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  adherenceRate: number;
+  totalDoses: number;
+  takenDoses: number;
+  missedDoses: number;
+  lateDoses: number;
+  insight: string;
+  suggestion: string;
+  riskLevel: string;
+  worstTime: string | null;
+}
+
+// Medication Insights Response (Updated to match backend)
+export interface MedicationInsightsResponse {
+  success: boolean;
+  hasMedications: boolean;
+  overallAdherence: number;
+  insights: MedicationInsightItem[];
+  recommendations: Array<{ type: string; message: string }> | string[];
 }
