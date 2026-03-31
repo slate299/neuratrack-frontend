@@ -32,7 +32,7 @@ export default function Chat() {
       queryKey: ["conversation", selectedConversationId],
       queryFn: () => chatService.getConversation(selectedConversationId!),
       enabled: !!selectedConversationId,
-      retry: false, // Don't retry on 404
+      retry: false,
     });
 
   // Mutations
@@ -45,13 +45,10 @@ export default function Chat() {
       conversationId?: number;
     }) => chatService.sendMessage(message, conversationId),
     onSuccess: (data) => {
-      // Invalidate conversations list to refresh
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
 
-      // Update the selected conversation ID
       if (data.conversationId) {
         setSelectedConversationId(data.conversationId);
-        // Invalidate the specific conversation to fetch it
         queryClient.invalidateQueries({
           queryKey: ["conversation", data.conversationId],
         });
@@ -64,7 +61,6 @@ export default function Chat() {
     onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
 
-      // If we deleted the current conversation, clear selection
       if (selectedConversationId === deletedId) {
         setSelectedConversationId(undefined);
         setCurrentMessages([]);
@@ -107,18 +103,14 @@ export default function Chat() {
     };
     setCurrentMessages((prev) => [...prev, tempUserMessage]);
 
-    // Send to API
     try {
       const result = await sendMessageMutation.mutateAsync({
         message,
         conversationId: selectedConversationId,
       });
-
-      // After successful send, the conversationDetail will update via React Query
       console.log("Message sent successfully:", result);
     } catch (error) {
       console.error("Failed to send message:", error);
-      // Remove the optimistic message on error
       setCurrentMessages((prev) =>
         prev.filter((m) => m.id !== tempUserMessage.id),
       );
@@ -227,7 +219,6 @@ export default function Chat() {
                   key={message.id}
                   message={message}
                   onFeedback={(messageId, feedback) => {
-                    // Handle feedback - could send to API
                     console.log("Feedback for message", messageId, feedback);
                   }}
                 />

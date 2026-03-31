@@ -113,6 +113,7 @@ export interface SeizureSummary {
   mostCommonTrigger: string;
   trend: "increasing" | "decreasing" | "stable";
   trendPercentage?: number;
+  seizureFreeStreak?: number; // Add this line
 }
 
 // API Response for Seizure Summary
