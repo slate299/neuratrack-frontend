@@ -123,6 +123,7 @@ export const emergencyService = {
     message?: string;
     location?: string;
     autoTriggered?: boolean;
+    contactIds?: number[]; // Add this new parameter
   }): Promise<TriggerSOSResponse> => {
     try {
       const response = await axiosInstance.post(

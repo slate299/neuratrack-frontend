@@ -1,5 +1,6 @@
 // src/pages/Emergency.tsx
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   emergencyService,
@@ -102,17 +103,26 @@ export default function Emergency() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Emergency Contacts
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Manage your emergency contacts. These people will be alerted when
-            you trigger SOS.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Emergency Contacts
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Manage your emergency contacts. These people will be alerted when you
+          trigger SOS.
+        </p>
+      </div>
+
+      {/* Center Circle SOS Button */}
+      <div className="flex flex-col items-center justify-center py-8">
         <SOSButton contacts={contacts} />
+
+        {/* Hint text */}
+        {contacts.length > 0 && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
+            ⚠️ Tap the button above to send emergency alert to selected contacts
+          </p>
+        )}
       </div>
 
       {/* SOS Warning */}
@@ -130,7 +140,7 @@ export default function Emergency() {
 
       {/* Add Contact Button */}
       {!showForm && (
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={() => setShowForm(true)} variant="outline">
           <Plus className="w-4 h-4 mr-2" />
           Add Emergency Contact
         </Button>

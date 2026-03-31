@@ -81,7 +81,7 @@ export default defineConfig({
     }),
     // Bundle analyzer - shows detailed bundle size report
     visualizer({
-      open: true, // Auto-open report after build
+      open: false, // Auto-open report after build
       gzipSize: true,
       brotliSize: true,
       filename: "dist/stats.html",
